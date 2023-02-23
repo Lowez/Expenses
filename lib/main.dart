@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, sort_child_properties_last, avoid_unnecessary_containers, use_key_in_widget_constructors, unused_import
+// ignore_for_file: prefer_const_constructors, sort_child_properties_last, avoid_unnecessary_containers, use_key_in_widget_constructors, unused_import, unused_local_variable, sized_box_for_whitespace
 
 import 'dart:ffi';
 
@@ -7,6 +7,8 @@ import 'package:expenses/components/transaction_form.dart';
 
 import 'package:expenses/models/transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/date_symbol_data_file.dart';
 import 'dart:math';
 
 import '../models/transaction.dart';
@@ -20,6 +22,8 @@ void main() {
 class ExpensesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
     final ThemeData tema = ThemeData();
 
     return MaterialApp(
@@ -59,6 +63,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((transaction) {
@@ -105,24 +110,53 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('expenses pessoais'),
-        // ignore: prefer_const_literals_to_create_immutables
-        actions: [
-          IconButton(
-            onPressed: () => _openTransactionFormModal(context),
-            icon: Icon(Icons.add),
-          )
-        ],
+    final mediaQuery = MediaQuery.of(context);
+    bool _isLandscape = mediaQuery.orientation == Orientation.landscape;
+
+    final appBarWidget = AppBar(
+      title: Text(
+        'Despesas Pessoais',
+        style: TextStyle(fontSize: 16 * mediaQuery.textScaleFactor),
       ),
+      // ignore: prefer_const_literals_to_create_immutables
+      actions: [
+        if (_isLandscape)
+          IconButton(
+            onPressed: () {
+              setState(() {
+                _showChart = !_showChart;
+              });
+            },
+            icon: Icon(_showChart ? Icons.list : Icons.bar_chart_rounded),
+          ),
+        IconButton(
+          onPressed: () => _openTransactionFormModal(context),
+          icon: Icon(Icons.add),
+        )
+      ],
+    );
+
+    final availableHeight = mediaQuery.size.height -
+        appBarWidget.preferredSize.height -
+        mediaQuery.padding.top;
+
+    return Scaffold(
+      appBar: appBarWidget,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           // ignore: prefer_const_literals_to_create_immutables
           children: [
-            Chart(_recentTransactions),
-            TransactionList(_transactions, _removeTransaction),
+            if (_showChart || !_isLandscape)
+              Container(
+                height: availableHeight * (_isLandscape ? 0.7 : 0.35),
+                child: Chart(_recentTransactions),
+              ),
+            if (!_showChart || !_isLandscape)
+              Container(
+                height: availableHeight * (_isLandscape ? 1 : 0.65),
+                child: TransactionList(_transactions, _removeTransaction),
+              ),
           ],
         ),
       ),
