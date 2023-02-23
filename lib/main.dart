@@ -1,11 +1,13 @@
 // ignore_for_file: prefer_const_constructors, sort_child_properties_last, avoid_unnecessary_containers, use_key_in_widget_constructors, unused_import, unused_local_variable, sized_box_for_whitespace
 
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:expenses/components/chart.dart';
 import 'package:expenses/components/transaction_form.dart';
 
 import 'package:expenses/models/transaction.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_file.dart';
@@ -108,10 +110,16 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget _getIconButton(IconData icon, Function() fn) {
+    return Platform.isIOS
+        ? GestureDetector(onTap: fn, child: Icon(icon))
+        : IconButton(icon: Icon(icon), onPressed: fn);
+  }
+
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    bool _isLandscape = mediaQuery.orientation == Orientation.landscape;
+    bool isLandscape = mediaQuery.orientation == Orientation.landscape;
 
     final appBarWidget = AppBar(
       title: Text(
@@ -120,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       // ignore: prefer_const_literals_to_create_immutables
       actions: [
-        if (_isLandscape)
+        if (isLandscape)
           IconButton(
             onPressed: () {
               setState(() {
@@ -140,31 +148,87 @@ class _MyHomePageState extends State<MyHomePage> {
         appBarWidget.preferredSize.height -
         mediaQuery.padding.top;
 
-    return Scaffold(
-      appBar: appBarWidget,
-      body: SingleChildScrollView(
+    final iosPage = SafeArea(
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           // ignore: prefer_const_literals_to_create_immutables
           children: [
-            if (_showChart || !_isLandscape)
+            if (_showChart || !isLandscape)
               Container(
-                height: availableHeight * (_isLandscape ? 0.7 : 0.35),
+                height: availableHeight * (isLandscape ? 0.7 : 0.35),
                 child: Chart(_recentTransactions),
               ),
-            if (!_showChart || !_isLandscape)
+            if (!_showChart || !isLandscape)
               Container(
-                height: availableHeight * (_isLandscape ? 1 : 0.65),
+                height: availableHeight * (isLandscape ? 1 : 0.65),
                 child: TransactionList(_transactions, _removeTransaction),
               ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openTransactionFormModal(context),
-        child: Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
+
+    final iconList = Platform.isIOS ? CupertinoIcons.list_bullet : Icons.list;
+    final iconChart = Platform.isIOS
+        ? CupertinoIcons.chart_bar_alt_fill
+        : Icons.bar_chart_rounded;
+
+    final actions = [
+      if (isLandscape)
+        _getIconButton(
+          _showChart ? iconList : iconChart,
+          () {
+            setState(() {
+              _showChart = !_showChart;
+            });
+          },
+        ),
+      _getIconButton(
+        Platform.isIOS ? CupertinoIcons.add : Icons.add,
+        () => _openTransactionFormModal(context),
+      )
+    ];
+
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            navigationBar: CupertinoNavigationBar(
+              middle: Text('Despesas Pessoais'),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: actions,
+              ),
+            ),
+            child: iosPage,
+          )
+        : Scaffold(
+            appBar: appBarWidget,
+            body: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                // ignore: prefer_const_literals_to_create_immutables
+                children: [
+                  if (_showChart || !isLandscape)
+                    Container(
+                      height: availableHeight * (isLandscape ? 0.7 : 0.35),
+                      child: Chart(_recentTransactions),
+                    ),
+                  if (!_showChart || !isLandscape)
+                    Container(
+                      height: availableHeight * (isLandscape ? 1 : 0.65),
+                      child: TransactionList(_transactions, _removeTransaction),
+                    ),
+                ],
+              ),
+            ),
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : FloatingActionButton(
+                    onPressed: () => _openTransactionFormModal(context),
+                    child: Icon(Icons.add),
+                  ),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+          );
   }
 }
