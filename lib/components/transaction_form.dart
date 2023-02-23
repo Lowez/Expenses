@@ -1,8 +1,9 @@
-// ignore_for_file: use_key_in_widget_constructors, avoid_print, prefer_const_constructors, unnecessary_null_comparison
+// ignore_for_file: use_key_in_widget_constructors, avoid_print, prefer_const_constructors, unnecessary_null_comparison, sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'adaptative_button.dart';
+import 'adaptative_text_field.dart';
 
 class TransactionForm extends StatefulWidget {
   final void Function(String, double, DateTime) onSubmit;
@@ -59,20 +60,16 @@ class _TransactionFormState extends State<TransactionForm> {
           child: Column(
             // ignore: prefer_const_literals_to_create_immutables
             children: [
-              TextField(
+              AdaptativeTextField(
                 controller: _titleController,
-                onSubmitted: (_) => _submitForm(),
-                decoration: InputDecoration(
-                  labelText: 'Título',
-                ),
+                onSubmited: _submitForm,
+                label: 'Título',
               ),
-              TextField(
+              AdaptativeTextField(
                 controller: _valueController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                onSubmitted: (_) => _submitForm(),
-                decoration: InputDecoration(
-                  labelText: 'Valor R\$',
-                ),
+                textInputType: TextInputType.numberWithOptions(decimal: true),
+                onSubmited: _submitForm,
+                label: 'Valor R\$',
               ),
               Container(
                 height: 70,
