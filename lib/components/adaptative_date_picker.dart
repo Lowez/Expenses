@@ -1,4 +1,4 @@
-// ignore_for_file: use_key_in_widget_constructors
+// ignore_for_file: use_key_in_widget_constructors, sized_box_for_whitespace
 
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
@@ -46,6 +46,7 @@ class AdaptativeDatePicker extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
+                    // ignore: unnecessary_null_comparison
                     selectedDate == null
                         ? 'Nenhuma data selecionada!'
                         : 'Data selecionada: ${DateFormat('dd/MM/y').format(selectedDate)}',

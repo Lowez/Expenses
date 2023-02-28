@@ -1,7 +1,6 @@
 // ignore_for_file: use_key_in_widget_constructors, avoid_print, prefer_const_constructors, unnecessary_null_comparison, sized_box_for_whitespace
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'adaptative_button.dart';
 import 'adaptative_text_field.dart';
 import 'adaptative_date_picker.dart';
